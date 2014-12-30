@@ -12,7 +12,6 @@ document.body.appendChild( renderer.domElement )
 cubes = {}
 
 createCube = (x,y,z, color) ->
-  console.log(x,y,z)
   geometry = new THREE.BoxGeometry( 1, 1, 1 )
   material = new THREE.MeshBasicMaterial( { color: color, wireframe: true } )
   cube = new THREE.Mesh( geometry, material )
@@ -26,8 +25,6 @@ renderVolume = (volume) ->
   for location in _.keys(volume)
     [x,y,z] = location.split(',')
     createCube(x,y,z)
-
-#color = '#'+Math.floor(Math.random()*16777215).toString(16)
 
 createCubeTestVolume = ->
   volume = {}
@@ -54,22 +51,48 @@ render = ->
 findCube = (cursor) ->
   cubes["#{cursor[0]},#{cursor[1]},#{cursor[2]}"]
 
-cubify = (volume) ->
-  cursor = [0,0,0]
-  x = 0
-  while x++ < 10
-    y = 0
-    while y++ < 10
-      z = 0
-      while z++ < 10
-        do ->
-          cursor = [x-1,y-1,z-1]
-          cube = findCube(cursor)
-          setColor = ->
-            cube.material.color.setHex(0xFF0000)
-            cube.material.wireframe = false
-            render()
-          setTimeout(setColor, (x*y*z) * 10)
+deduplicate = (queue) ->
+  _.filter queue, (item) ->
+    if item[0] >= 10
+      return false
+    if item[1] >= 10
+      return false
+    if item[2] >= 10
+      return false
+    return true
+
+
+appendToFrontier = (x,y,z,frontier) ->
+  if x < 10 && y < 10 && z < 10
+    cube = findCube([x,y,z])
+    if cube.material.wireframe
+      frontier.push([x,y,z])
+
+createFrontier = (x,y,z,frontier) ->
+  appendToFrontier(x+1,y,z,frontier)
+  appendToFrontier(x,y+1,z,frontier)
+  appendToFrontier(x,y,z+1,frontier)
+
+  appendToFrontier(x+1,y+1,z, frontier)
+  appendToFrontier(x+1,y,z+1, frontier)
+  appendToFrontier(x,y+1,z+1, frontier)
+  appendToFrontier(x+1,y+1,z+1, frontier)
+
+cubify = (volume, frontier=[[0,0,0]]) ->
+  cursor = frontier.pop()
+  if !cursor
+    return
+  cube = findCube(cursor)
+
+  if cube.material.wireframe
+    createFrontier(cursor[0],cursor[1],cursor[2],frontier)
+    frontier = deduplicate(frontier)
+
+  color = '0x'+Math.floor(Math.random()*16777215).toString(16)
+  cube.material.color.setHex(color)
+  cube.material.wireframe = false
+  render()
+  setTimeout((-> cubify(volume,frontier)), 10)
 
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
