@@ -79,7 +79,7 @@ createFrontier = (x,y,z,frontier) ->
   appendToFrontier(x+1,y+1,z+1, frontier)
 
 cubify = (volume, frontier=[[0,0,0]]) ->
-  cursor = frontier.pop()
+  cursor = frontier.shift()
   if !cursor
     return
   cube = findCube(cursor)
@@ -88,11 +88,13 @@ cubify = (volume, frontier=[[0,0,0]]) ->
     createFrontier(cursor[0],cursor[1],cursor[2],frontier)
     frontier = deduplicate(frontier)
 
+  console.log(cursor)
+
   color = '0x'+Math.floor(Math.random()*16777215).toString(16)
   cube.material.color.setHex(color)
   cube.material.wireframe = false
   render()
-  setTimeout((-> cubify(volume,frontier)), 10)
+  setTimeout((-> cubify(volume,_.clone(frontier))), 10)
 
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
