@@ -3,6 +3,7 @@ THREE = require('three')
 TrackballControls = require('./TrackballControls')
 Frontier = require('./cubifier/Frontier')
 Mesh = require('./cubifier/Mesh')
+Cubifier = require('./cubifier/Cubifier')
 
 scene = new THREE.Scene()
 camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 )
@@ -50,27 +51,7 @@ animate = ->
 render = ->
   renderer.render( scene, camera )
 
-cubify = (state) ->
-  {frontier,cube} = state
-  cursor = frontier.shift()
-  if !cursor
-    return
-  box = mesh.findBox(cursor)
-  console.log(cursor)
 
-  newFrontier = new Frontier(frontier.queue, mesh)
-
-  if box.material.wireframe
-    newFrontier.expand(cursor)
-    color = '0x'+Math.floor(Math.random()*16777215).toString(16)
-    box.material.color.setHex(color)
-    box.material.wireframe = false
-    render()
-
-  newFrontier.deduplicate()
-
-  newState = _.extend({}, state, {frontier: newFrontier})
-  setTimeout((-> cubify(newState)), 10)
 
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
@@ -79,7 +60,8 @@ volume = createCubeTestVolume()
 renderVolume(volume)
 render()
 animate()
-cubify
+cubifier = new Cubifier(mesh, render)
+cubifier.cubify
   volume: volume,
   cursor: {x:0,y:0,z:0}
   frontier: new Frontier([{x:0,y:0,z:0}], mesh)
