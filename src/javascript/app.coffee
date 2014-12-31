@@ -48,53 +48,64 @@ animate = ->
 render = ->
   renderer.render( scene, camera )
 
-findCube = (cursor) ->
-  cubes["#{cursor[0]},#{cursor[1]},#{cursor[2]}"]
-
-deduplicate = (queue) ->
-  _.filter queue, (item) ->
-    if item[0] >= 10
-      return false
-    if item[1] >= 10
-      return false
-    if item[2] >= 10
-      return false
-    return true
+findBox = (cursor) ->
+  cubes["#{cursor.x},#{cursor.y},#{cursor.z}"]
 
 
-appendToFrontier = (x,y,z,frontier) ->
-  if x < 10 && y < 10 && z < 10
-    cube = findCube([x,y,z])
-    if cube.material.wireframe
-      frontier.push([x,y,z])
+class Frontier
+  constructor: (@queue)->
 
-createFrontier = (x,y,z,frontier) ->
-  appendToFrontier(x+1,y,z,frontier)
-  appendToFrontier(x,y+1,z,frontier)
-  appendToFrontier(x,y,z+1,frontier)
+  append: (cursor) ->
+    if cursor.x < 10 && cursor.y < 10 && cursor.z < 10
+      cube = findBox(cursor)
+      if cube.material.wireframe
+        @queue.push(cursor)
 
-  appendToFrontier(x+1,y+1,z, frontier)
-  appendToFrontier(x+1,y,z+1, frontier)
-  appendToFrontier(x,y+1,z+1, frontier)
-  appendToFrontier(x+1,y+1,z+1, frontier)
+  expand: ({x,y,z}) ->
+    @append {x:x+1, y:y, z:z}
+    @append {x:x, y:y+1, z:z}
+    @append {x:x, y:y, z:z+1}
 
-cubify = (volume, frontier=[[0,0,0]]) ->
+    @append {x:x+1, y:y+1, z:z}
+    @append {x:x+1, y:y, z:z+1}
+    @append {x:x, y:y+1, z:z+1}
+    @append {x:x+1, y:y+1, z:z+1}
+
+  shift: ->
+    @queue.shift()
+
+  deduplicate: () ->
+    @queue = _.filter @queue, (item) ->
+      if item[0] >= 10
+        return false
+      if item[1] >= 10
+        return false
+      if item[2] >= 10
+        return false
+      return true
+
+
+cubify = (state) ->
+  {frontier,cube} = state
   cursor = frontier.shift()
   if !cursor
     return
-  cube = findCube(cursor)
-
-  if cube.material.wireframe
-    createFrontier(cursor[0],cursor[1],cursor[2],frontier)
-    frontier = deduplicate(frontier)
-
+  box = findBox(cursor)
   console.log(cursor)
 
-  color = '0x'+Math.floor(Math.random()*16777215).toString(16)
-  cube.material.color.setHex(color)
-  cube.material.wireframe = false
-  render()
-  setTimeout((-> cubify(volume,_.clone(frontier))), 10)
+  newFrontier = new Frontier(frontier.queue)
+
+  if box.material.wireframe
+    newFrontier.expand(cursor)
+    color = '0x'+Math.floor(Math.random()*16777215).toString(16)
+    box.material.color.setHex(color)
+    box.material.wireframe = false
+    render()
+
+  newFrontier.deduplicate()
+
+  newState = _.extend({}, state, {frontier: newFrontier})
+  setTimeout((-> cubify(newState)), 10)
 
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
@@ -103,4 +114,8 @@ volume = createCubeTestVolume()
 renderVolume(volume)
 render()
 animate()
-cubify(volume)
+cubify
+  volume: volume,
+  cursor: {x:0,y:0,z:0}
+  frontier: new Frontier([{x:0,y:0,z:0}])
+  cube: {width:0,height:0,depth:0}
