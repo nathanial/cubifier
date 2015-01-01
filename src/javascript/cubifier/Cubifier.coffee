@@ -13,7 +13,11 @@ class Cubifier
     @vheight = @volume.getHeight()
     @vdepth = @volume.getDepth()
 
-    @cube = {width:0,height:0,depth:0}
+    console.log("VDEPTHS", @vwidth, @vheight, @vdepth)
+
+    @cube = {width:1,height:1,depth:1}
+    @checkCubeFitsInVolume()
+    @renderCube(@cube)
     iterations = 0
     while @cubeNeedsExpansion()
       if iterations++ > ITERATION_LIMIT

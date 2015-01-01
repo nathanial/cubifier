@@ -27,26 +27,15 @@ createCube = (x,y,z, color) ->
 
 renderVolume = (volume) ->
   volume.forEach (x,y,z,value) ->
+    console.log("Create Cube", x,y,z)
     createCube(x,y,z)
 
-createFlatXTestVolume = ->
+createVolume = (xw, yw, zw) ->
   volume = new Volume()
-  x = 0
-  while x++ < 10
-    y = 0
-    while y++ < 10
-      volume.setVoxel(x-1, y-1, 0, true)
-  volume
-
-createCubeTestVolume = ->
-  volume = new Volume()
-  x = 0
-  while x++ <= 10
-    y = 0
-    while y++ <= 10
-      z = 0
-      while z++ <= 10
-        volume.setVoxel(x-1,y-1,z-1, true)
+  for x in [0...xw]
+    for y in [0...yw]
+      for z in [0...zw]
+        volume.setVoxel(x,y,z, true)
   volume
 
 camera.position.x = 5
@@ -72,8 +61,7 @@ renderCube = (cube) ->
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
-volume = createCubeTestVolume()
-#volume = createFlatXTestVolume()
+volume = createVolume(10,10,10)
 renderVolume(volume)
 render()
 animate()

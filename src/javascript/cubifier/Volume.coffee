@@ -40,7 +40,6 @@ class Volume
     @blocks["#{x},#{y},#{z}"]
 
   forEach: (fn) ->
-    console.log("BLocks", @blocks)
     for position,value of @blocks
       [x,y,z] = position.split(',')
       fn(x,y,z, value)
