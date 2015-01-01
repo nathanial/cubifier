@@ -15,7 +15,7 @@ class Mesh
     for x in [0...cube.width]
       for y in [0...cube.height]
         for z in [0...cube.depth]
-          box = @findBox({x:x,y:y,z:z})
+          box = @findBox({x:x+cube.offset.x,y:y+cube.offset.y,z:z+cube.offset.z})
           if not box
             throw "Could not find box: #{x}, #{y}, #{z}"
           # if box.material.wireframe

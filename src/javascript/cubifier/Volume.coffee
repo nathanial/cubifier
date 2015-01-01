@@ -6,6 +6,27 @@ class Volume
     for position, value of v.blocks
       @blocks[position] = value
 
+  startX: ->
+    xmin = Number.MAX_VALUE
+    @forEach (x,y,z) ->
+      if x < xmin
+        xmin = x
+    xmin
+
+  startY: ->
+    ymin = Number.MAX_VALUE
+    @forEach (x,y,z) ->
+      if y < ymin
+        ymin = y
+    ymin
+
+  startZ: ->
+    zmin = Number.MAX_VALUE
+    @forEach (x,y,z) ->
+      if z < zmin
+        zmin = z
+    zmin
+
   getWidth: ->
     xmin = Number.MAX_VALUE
     xmax = Number.MIN_VALUE
@@ -14,7 +35,6 @@ class Volume
         xmin = x
       if x > xmax
         xmax = x
-    console.log("XMIN,XMAX",xmin,xmax)
     Math.abs(xmax - xmin) + 1
 
   getHeight: ->
@@ -46,6 +66,19 @@ class Volume
   forEach: (fn) ->
     for position,value of @blocks
       [x,y,z] = position.split(',')
-      fn(x,y,z, value)
+      fn(parseInt(x),parseInt(y),parseInt(z), value)
+
+  subtract: (cube) ->
+    v = new Volume()
+    @forEach (x,y,z, value) =>
+      if not @insideCube(cube,x,y,z)
+        v.setVoxel(x,y,z,value)
+    v
+
+  insideCube: (cube, x, y, z) ->
+    return false if x >= cube.width + cube.offset.x or x < cube.offset.x
+    return false if y >= cube.height + cube.offset.y or y < cube.offset.y
+    return false if z >= cube.depth + cube.offset.z or z < cube.offset.z
+    return true
 
 module.exports = Volume

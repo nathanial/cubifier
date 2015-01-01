@@ -68,7 +68,7 @@ renderCube = (cube) ->
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
-#volume = createVolume(10,10,10)
+#volume = createVolume(10,10,10, {x:5, y:0, z:0})
 volume = createIrregularVolume()
 renderVolume(volume)
 render()
