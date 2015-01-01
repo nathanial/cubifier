@@ -1,30 +1,62 @@
 _ = require 'underscore'
 Frontier = require './Frontier'
 
+ITERATION_LIMIT = 1000
 
 class Cubifier
-  constructor: (@mesh, @render) ->
+  constructor: (@renderCube) ->
+    if !@renderCube
+      throw "The RenderCube function is required"
 
-  cubify: (state) ->
-    {frontier,cube} = state
-    cursor = frontier.shift()
-    if !cursor
-      return
-    box = @mesh.findBox(cursor)
-    console.log(cursor)
+  cubify: (@volume) ->
+    @vwidth = @volume.getWidth()
+    @vheight = @volume.getHeight()
+    @vdepth = @volume.getDepth()
 
-    newFrontier = new Frontier(frontier.queue, @mesh)
+    @cube = {width:0,height:0,depth:0}
+    iterations = 0
+    while @cubeNeedsExpansion()
+      if iterations++ > ITERATION_LIMIT
+        throw "Iteration Limit Exceeded"
+      @expandCube()
 
-    if box.material.wireframe
-      newFrontier.expand(cursor)
-      color = '0x'+Math.floor(Math.random()*16777215).toString(16)
-      box.material.color.setHex(color)
-      box.material.wireframe = false
-      @render()
+  cubeNeedsExpansion: ->
+    (@cube.width < @vwidth or
+     @cube.height < @vheight or
+     @cube.depth < @vdepth)
 
-    newFrontier.deduplicate()
+  expandCube: ->
+    for dim in ['x','y','z']
+      if @canExpand(dim)
+        @expand(dim)
 
-    newState = _.extend({}, state, {frontier: newFrontier})
-    setTimeout((=> @cubify(newState)), 10)
+  canExpand: (dimension) ->
+    if dimension == 'x'
+      return @cube.width < @vwidth
+    else if dimension == 'y'
+      return @cube.height < @vheight
+    else if dimension == 'z'
+      return @cube.depth < @vdepth
+    else
+      throw "Unrecognized dimension #{dimension}"
+
+  expand: (dimension) ->
+    if dimension == 'x'
+      @cube.width += 1
+    else if dimension == 'y'
+      @cube.height += 1
+    else if dimension == 'z'
+      @cube.depth += 1
+    else
+      throw "Unrecognized dimension #{dimension}"
+    @checkCubeFitsInVolume()
+    @renderCube(@cube)
+
+  checkCubeFitsInVolume: ->
+    if (@cube.width > @vwidth or
+        @cube.height > @vheight or
+        @cube.depth > @vdepth)
+      throw "Cube does not fit in volume #{@cube.width} #{@cube.height} #{@cube.depth}"
+
 
 module.exports = Cubifier

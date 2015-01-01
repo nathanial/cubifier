@@ -4,6 +4,7 @@ TrackballControls = require('./TrackballControls')
 Frontier = require('./cubifier/Frontier')
 Mesh = require('./cubifier/Mesh')
 Cubifier = require('./cubifier/Cubifier')
+Volume = require('./cubifier/Volume')
 
 scene = new THREE.Scene()
 camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 )
@@ -25,19 +26,27 @@ createCube = (x,y,z, color) ->
   mesh.add(x,y,z,cube)
 
 renderVolume = (volume) ->
-  for location in _.keys(volume)
-    [x,y,z] = location.split(',')
+  volume.forEach (x,y,z,value) ->
     createCube(x,y,z)
 
-createCubeTestVolume = ->
-  volume = {}
+createFlatXTestVolume = ->
+  volume = new Volume()
   x = 0
   while x++ < 10
     y = 0
     while y++ < 10
+      volume.setVoxel(x-1, y-1, 0, true)
+  volume
+
+createCubeTestVolume = ->
+  volume = new Volume()
+  x = 0
+  while x++ <= 10
+    y = 0
+    while y++ <= 10
       z = 0
-      while z++ < 10
-        volume["#{x-1},#{y-1},#{z-1}"] = 1
+      while z++ <= 10
+        volume.setVoxel(x-1,y-1,z-1, true)
   volume
 
 camera.position.x = 5
@@ -51,18 +60,22 @@ animate = ->
 render = ->
   renderer.render( scene, camera )
 
+space = 0
+renderCube = (cube) ->
+  cubeCopy = _.clone(cube)
+  doRender = ->
+    mesh.colorizeCube(cubeCopy)
+    render()
+  setTimeout(doRender, 100 * (space++))
 
 
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
 volume = createCubeTestVolume()
+#volume = createFlatXTestVolume()
 renderVolume(volume)
 render()
 animate()
-cubifier = new Cubifier(mesh, render)
-cubifier.cubify
-  volume: volume,
-  cursor: {x:0,y:0,z:0}
-  frontier: new Frontier([{x:0,y:0,z:0}], mesh)
-  cube: {width:0,height:0,depth:0}
+cubifier = new Cubifier(renderCube)
+cubifier.cubify volume
