@@ -30,12 +30,19 @@ renderVolume = (volume) ->
     console.log("Create Cube", x,y,z)
     createCube(x,y,z)
 
-createVolume = (xw, yw, zw) ->
+createVolume = (xw, yw, zw, offset={x:0,y:0,z:0}) ->
   volume = new Volume()
   for x in [0...xw]
     for y in [0...yw]
       for z in [0...zw]
-        volume.setVoxel(x,y,z, true)
+        volume.setVoxel(x+offset.x,y+offset.y,z+offset.z, true)
+  volume
+
+createIrregularVolume = ->
+  volume = new Volume()
+  volume.append(createVolume(5,5,5))
+  volume.append(createVolume(10,10,1, {x:5,y:0,z:0}))
+
   volume
 
 camera.position.x = 5
@@ -61,7 +68,8 @@ renderCube = (cube) ->
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
-volume = createVolume(10,10,10)
+#volume = createVolume(10,10,10)
+volume = createIrregularVolume()
 renderVolume(volume)
 render()
 animate()

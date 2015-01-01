@@ -2,6 +2,10 @@ class Volume
   constructor: ->
     @blocks = {}
 
+  append: (v) ->
+    for position, value of v.blocks
+      @blocks[position] = value
+
   getWidth: ->
     xmin = Number.MAX_VALUE
     xmax = Number.MIN_VALUE

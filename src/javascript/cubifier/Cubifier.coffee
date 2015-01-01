@@ -61,6 +61,10 @@ class Cubifier
         @cube.height > @vheight or
         @cube.depth > @vdepth)
       throw "Cube does not fit in volume #{@cube.width} #{@cube.height} #{@cube.depth}"
-
+    for x in [0...@cube.width]
+      for y in [0...@cube.height]
+        for z in [0...@cube.depth]
+          if not @volume.getVoxel(x,y,z)
+            throw "Cube does not fit: #{@cube.width}, #{@cube.height}, #{@cube.depth}"
 
 module.exports = Cubifier
