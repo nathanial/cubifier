@@ -8,53 +8,59 @@ class Volume
 
   startX: ->
     xmin = Number.MAX_VALUE
-    @forEach (x,y,z) ->
-      if x < xmin
-        xmin = x
+    @forEach (x,y,z, value) ->
+      if value
+        if x < xmin
+          xmin = x
     xmin
 
   startY: ->
     ymin = Number.MAX_VALUE
-    @forEach (x,y,z) ->
-      if y < ymin
-        ymin = y
+    @forEach (x,y,z, value) ->
+      if value
+        if y < ymin
+          ymin = y
     ymin
 
   startZ: ->
     zmin = Number.MAX_VALUE
-    @forEach (x,y,z) ->
-      if z < zmin
-        zmin = z
+    @forEach (x,y,z, value) ->
+      if value
+        if z < zmin
+          zmin = z
     zmin
 
   getWidth: ->
     xmin = Number.MAX_VALUE
     xmax = Number.MIN_VALUE
-    @forEach (x,y,z) ->
-      if x < xmin
-        xmin = x
-      if x > xmax
-        xmax = x
+    @forEach (x,y,z, value) ->
+      if value
+        if x < xmin
+          xmin = x
+        if x > xmax
+          xmax = x
     Math.abs(xmax - xmin) + 1
 
   getHeight: ->
     ymin = Number.MAX_VALUE
     ymax = Number.MIN_VALUE
-    @forEach (x,y,z) ->
-      if y < ymin
-        ymin = y
-      if y > ymax
-        ymax = y
+    @forEach (x,y,z, value) ->
+      if value
+        if y < ymin
+          ymin = y
+        if y > ymax
+          ymax = y
     Math.abs(ymax - ymin) + 1
 
   getDepth: ->
     zmin = Number.MAX_VALUE
     zmax = Number.MIN_VALUE
-    @forEach (x,y,z) ->
-      if z < zmin
-        zmin = z
-      if z > zmax
-        zmax = z
+    @forEach (x,y,z, value) ->
+      if value
+        if z < zmin
+          zmin = z
+        if z > zmax
+          zmax = z
     Math.abs(zmax - zmin) + 1
 
   setVoxel: (x,y,z, value) ->

@@ -40,8 +40,9 @@ createVolume = (xw, yw, zw, offset={x:0,y:0,z:0}) ->
 
 createIrregularVolume = ->
   volume = new Volume()
-  volume.append(createVolume(5,5,5))
-  volume.append(createVolume(10,10,1, {x:5,y:0,z:0}))
+  #volume.append(createVolume(5,5,5))
+  volume.append(createVolume(5,1,1, {x:0,y:1,z:0}))
+  volume.append(createVolume(5,1,10, {x:5,y:0,z:0}))
 
   volume
 
