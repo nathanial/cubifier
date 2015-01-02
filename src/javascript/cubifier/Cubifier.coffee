@@ -46,17 +46,22 @@ class Cubifier
     throw "All dimensions are covered"
 
   cubeNeedsExpansion: ->
+    return false if _.keys(@volume.blocks).length == 0
     (@cube.width < @vwidth or
      @cube.height < @vheight or
      @cube.depth < @vdepth)
 
   expandCube: ->
     expanded = false
+    if _.keys(@volume.blocks).length == 0
+      return false
     for dim in ['x','y','z']
       if @canExpand(dim)
         @expand(dim)
         expanded = true
+    @renderCube(@cube)
     expanded
+
 
   canExpand: (dimension) ->
     if dimension == 'x'
@@ -79,7 +84,6 @@ class Cubifier
       throw "Unrecognized dimension #{dimension}"
     if not @checkCubeFitsInVolume(@cube)
       throw "Overexpanded"
-    @renderCube(@cube)
 
   checkCubeFitsInVolume: (cube)->
     if (cube.width > @vwidth or
