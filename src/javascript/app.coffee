@@ -68,7 +68,15 @@ createDonutWithSprinkles = ->
   volume.append(createDonutVolume())
   volume.append(createSprinkles())
   volume
-  
+
+createRandomShape = ->
+  volume = new Volume()
+  for x in [0..20]
+    for y in [0..20]
+      z = Math.round(Math.random() * 5)
+      volume.append(createVolume(1,1,1, {x:x, y:y, z:z}))
+  volume
+
 
 camera.position.x = 5
 camera.position.y = -10
@@ -95,7 +103,7 @@ controls.addEventListener('change', render)
 
 #volume = createVolume(10,10,10, {x:5, y:0, z:0})
 #volume = createIrregularVolume()
-volume = createDonutWithSprinkles()
+volume = createRandomShape()
 renderVolume(volume)
 render()
 animate()

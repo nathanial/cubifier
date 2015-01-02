@@ -27,6 +27,7 @@ class Cubifier
         throw "Iteration Limit Exceeded"
       if not @expandCube()
         @newCube(@uncoveredDimension())
+    @renderCube(@cube)
     if not @allOfVolumeIsCovered()
       throw "Missed some volume"
 
@@ -36,8 +37,6 @@ class Cubifier
     @vwidth = @volume.getWidth()
     @vheight = @volume.getHeight()
     @vdepth = @volume.getDepth()
-    console.log("New Cube", @cube)
-    console.log("New Volume", @vwidth, @vheight, @vdepth, JSON.parse(JSON.stringify(@volume)))
 
   uncoveredDimension: ->
     return 'x' if @cube.width < @vwidth
@@ -94,7 +93,6 @@ class Cubifier
       for y in [0...cube.height]
         for z in [0...cube.depth]
           if not @volume.getVoxel(x+cube.offset.x,y+cube.offset.y,z+cube.offset.z)
-            console.log(x + cube.offset.x,y + cube.offset.y,z + cube.offset.z, "Doesn't fit", @volume.blocks)
             return false
     return true
 
@@ -113,7 +111,6 @@ class Cubifier
     for position,value of @volume.blocks
       [x,y,z] = position.split(',')
       if value and not @withinCube(cube, parseInt(x), parseInt(y), parseInt(z))
-        console.log("Missing", x,y,z)
         return false
     return true
 

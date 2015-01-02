@@ -101,10 +101,7 @@ class Volume
           v.setVoxel(x,y,z,value)
         else
           inCount += 1
-    console.log("In Count", inCount, "Out Count", outCount)
-    console.log("Block Count", _.keys(@blocks).length, _.keys(v.blocks).length)
     if inCount == 0
-      console.log("Subtraction Failed", this, v, cube)
       throw "Subtraction failed"
     v
 
