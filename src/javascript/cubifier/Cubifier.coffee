@@ -1,7 +1,7 @@
 _ = require 'underscore'
 Frontier = require './Frontier'
 
-ITERATION_LIMIT = 20
+ITERATION_LIMIT = 1000
 
 class Cubifier
   constructor: (@renderCube) ->
@@ -17,10 +17,7 @@ class Cubifier
       width:1
       height:1
       depth:1
-      offset:
-        x: @volume.startX()
-        y: @volume.startY()
-        z: @volume.startZ()
+      offset: @volume.startPosition()
 
     @checkCubeFitsInVolume(@cube)
     @renderCube(@cube)
@@ -35,7 +32,7 @@ class Cubifier
 
   newCube: (dimension) ->
     @volume = @volume.subtract(@cube)
-    @cube = {width:1,height:1,depth:1, offset: {x:@volume.startX(), y:@volume.startY(), z: @volume.startZ()}}
+    @cube = {width:1,height:1,depth:1, offset: @volume.startPosition()}
     @vwidth = @volume.getWidth()
     @vheight = @volume.getHeight()
     @vdepth = @volume.getDepth()

@@ -1,3 +1,5 @@
+_ = require('underscore')
+
 class Volume
   constructor: ->
     @blocks = {}
@@ -6,7 +8,7 @@ class Volume
     for position, value of v.blocks
       @blocks[position] = value
 
-  startX: ->
+  firstX: ->
     xmin = Number.MAX_VALUE
     @forEach (x,y,z, value) ->
       if value
@@ -14,7 +16,7 @@ class Volume
           xmin = x
     xmin
 
-  startY: ->
+  firstY: ->
     ymin = Number.MAX_VALUE
     @forEach (x,y,z, value) ->
       if value
@@ -22,13 +24,27 @@ class Volume
           ymin = y
     ymin
 
-  startZ: ->
+  firstZ: ->
     zmin = Number.MAX_VALUE
     @forEach (x,y,z, value) ->
       if value
         if z < zmin
           zmin = z
     zmin
+
+  startPosition: ->
+    xmin = Number.MAX_VALUE
+    ymin = Number.MAX_VALUE
+    zmin = Number.MAX_VALUE
+    @forEach (x,y,z, value) ->
+      if value
+        if x <= xmin && y <= ymin && z <= zmin
+          xmin = x
+          ymin = y
+          zmin = z
+    {x:xmin,y:ymin,z:zmin}
+
+
 
   getWidth: ->
     xmin = Number.MAX_VALUE
@@ -76,15 +92,27 @@ class Volume
 
   subtract: (cube) ->
     v = new Volume()
+    inCount = 0
+    outCount = 0
     @forEach (x,y,z, value) =>
-      if not @insideCube(cube,x,y,z)
-        v.setVoxel(x,y,z,value)
+      if value
+        if not @insideCube(cube,x,y,z)
+          outCount += 1
+          v.setVoxel(x,y,z,value)
+        else
+          inCount += 1
+    console.log("In Count", inCount, "Out Count", outCount)
+    console.log("Block Count", _.keys(@blocks).length, _.keys(v.blocks).length)
+    if inCount == 0
+      console.log("Subtraction Failed", this, v, cube)
+      throw "Subtraction failed"
     v
 
   insideCube: (cube, x, y, z) ->
-    return false if x >= cube.width + cube.offset.x or x < cube.offset.x
-    return false if y >= cube.height + cube.offset.y or y < cube.offset.y
-    return false if z >= cube.depth + cube.offset.z or z < cube.offset.z
-    return true
+    xWithin = cube.width + cube.offset.x > x >= cube.offset.x
+    yWithin = cube.height + cube.offset.y > y >= cube.offset.y
+    zWithin = cube.depth + cube.offset.z > z >= cube.offset.z
+
+    return xWithin && yWithin && zWithin
 
 module.exports = Volume
