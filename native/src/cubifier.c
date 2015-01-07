@@ -7,7 +7,7 @@ CUBIFIER_ERROR cubifier_create_volume(int xdim, int ydim, int zdim, CubifierVolu
   outVolume->height = ydim;
   outVolume->depth = zdim;
 
-  short *voxels = malloc(sizeof(short) * xdim * ydim * zdim);
+  short *voxels = calloc(xdim*ydim*zdim, sizeof(short));
   if(voxels == NULL){
     return CUBIFIER_ERROR_OUT_OF_MEMORY;
   }
@@ -18,15 +18,31 @@ CUBIFIER_ERROR cubifier_create_volume(int xdim, int ydim, int zdim, CubifierVolu
 }
 
 CUBIFIER_ERROR cubifier_destroy_volume(CubifierVolume *volume){
-  return CUBIFIER_ERROR_NOT_IMPLEMENTED;
+  volume->width = -1;
+  volume->height = -1;
+  volume->depth = -1;
+  free(volume->voxels);
+  return CUBIFIER_ERROR_SUCCESS;
 }
 
 CUBIFIER_ERROR cubifier_set_voxel(CubifierVolume *volume, int x, int y, int z, short value){
-  return CUBIFIER_ERROR_NOT_IMPLEMENTED;
+  if(x < 0 || x >= volume->width ||
+     y < 0 || y >= volume->height ||
+     z < 0 || z >= volume->depth){
+    return CUBIFIER_ERROR_OUT_OF_RANGE;
+  }
+  volume->voxels[z*(volume->width*volume->height) + y*(volume->width) + x] = value;
+  return CUBIFIER_ERROR_SUCCESS;
 }
 
 CUBIFIER_ERROR cubifier_get_voxel(CubifierVolume *volume, int x, int y, int z, short* outValue){
-  return CUBIFIER_ERROR_NOT_IMPLEMENTED;
+  if(x < 0 || x >= volume->width ||
+    y < 0 || y >= volume->height ||
+    z < 0 || z >= volume->depth){
+    return CUBIFIER_ERROR_OUT_OF_RANGE;
+  }
+  *outValue = volume->voxels[z*(volume->width*volume->height) + y*(volume->width) + x];
+  return CUBIFIER_ERROR_SUCCESS;
 }
 
 CUBIFIER_ERROR cubifier_cubify(CubifierVolume *volume, CubifierCube *outCubes, int *cubeCount){

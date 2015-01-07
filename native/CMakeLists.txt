@@ -5,8 +5,6 @@ set(PROJ_VERSION 0.0.1)
 project(${PROJECT_NAME})
 enable_testing()
 #--- Compiler options
-if(CMAKE_COMPILER_IS_GNUCC)
-add_definitions(-Wall -Werror -pedantic -std=c99)
-endif(CMAKE_COMPILER_IS_GNUCC)
+add_definitions(-Wall -Werror -pedantic -std=c99 -O2)
 #--- Subdirs
 add_subdirectory(src)
