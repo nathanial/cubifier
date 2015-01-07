@@ -1,7 +1,6 @@
 _ = require('underscore')
 THREE = require('three')
 TrackballControls = require('./TrackballControls')
-Frontier = require('./cubifier/Frontier')
 Mesh = require('./cubifier/Mesh')
 Cubifier = require('./cubifier/Cubifier')
 Volume = require('./cubifier/Volume')

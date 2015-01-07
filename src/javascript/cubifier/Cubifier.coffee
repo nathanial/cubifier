@@ -1,5 +1,4 @@
 _ = require 'underscore'
-Frontier = require './Frontier'
 
 ITERATION_LIMIT = 1000
 
