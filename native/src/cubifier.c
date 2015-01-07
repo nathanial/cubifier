@@ -1,6 +1,34 @@
 #include "cubifier.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+
+#define CHECK_ERROR(CMD) \
+do { \
+  int code = CMD; \
+  if(code){ \
+    return code; \
+  } \
+} while(0)
+
+static void get_dimensions(CubifierVolume *volume, int *width, int *height, int *depth){
+
+}
+
+static void set_start_position(CubifierVolume *volume, CubifierCube *cube){
+}
+
+static bool cube_needs_expansion(CubifierVolume *volume, CubifierCube* cube){
+  return false;
+}
+
+static void new_cube(CubifierVolume *volume, CubifierCube *oldCube, CubifierCube *cube){
+
+}
+
+static bool expand_cube(CubifierVolume *volume, CubifierCube *cube){
+  return false;
+}
 
 CUBIFIER_ERROR cubifier_create_volume(int xdim, int ydim, int zdim, CubifierVolume *outVolume){
   outVolume->width = xdim;
@@ -45,8 +73,34 @@ CUBIFIER_ERROR cubifier_get_voxel(CubifierVolume *volume, int x, int y, int z, s
   return CUBIFIER_ERROR_SUCCESS;
 }
 
-CUBIFIER_ERROR cubifier_cubify(CubifierVolume *volume, CubifierCube *outCubes, int *cubeCount){
-  return CUBIFIER_ERROR_NOT_IMPLEMENTED;
+CUBIFIER_ERROR cubifier_cubify(CubifierVolume *volume, CubifierCube *outCubes, int *outCubeCount){
+  int width, height, depth;
+
+  get_dimensions(volume, &width, &height, &depth);
+
+  int cubeCount = 0;
+  CubifierCube *cubes = malloc(sizeof(CubifierCube) * 100);
+  if(cubes == NULL){
+    return CUBIFIER_ERROR_OUT_OF_MEMORY;
+  }
+
+  CubifierCube *cube = &cubes[0];
+
+  set_start_position(volume, cube);
+
+  while(cube_needs_expansion(volume, cube)) {
+    if(!expand_cube(volume, cube)){
+      CubifierCube *oldCube = cube;
+      cubeCount++;
+      if(cubeCount >= 100){
+        return CUBIFIER_ERROR_OUT_OF_MEMORY;
+      }
+      cube = &cubes[cubeCount];
+      new_cube(volume, oldCube, cube);
+    }
+  }
+
+  return CUBIFIER_ERROR_SUCCESS;
 }
 
 const char* cubifier_get_error_string(CUBIFIER_ERROR code){

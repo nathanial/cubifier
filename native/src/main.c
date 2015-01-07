@@ -25,8 +25,11 @@ static CUBIFIER_ERROR create_giant_surface(CubifierVolume *volume){
 
 int main(){
   CubifierVolume volume;
+  CubifierCube *cubes = NULL;
+  int cubeCount;
 
   CHECK_ERROR(create_giant_surface(&volume));
+  CHECK_ERROR(cubifier_cubify(&volume, cubes, &cubeCount));
   CHECK_ERROR(cubifier_destroy_volume(&volume));
 
   return 0;
