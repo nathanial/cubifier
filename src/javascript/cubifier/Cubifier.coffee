@@ -1,6 +1,6 @@
 _ = require 'underscore'
 
-ITERATION_LIMIT = 1000
+ITERATION_LIMIT = 10000
 
 class Cubifier
   constructor: (@renderCube) ->
@@ -8,9 +8,10 @@ class Cubifier
       throw "The RenderCube function is required"
 
   cubify: (@volume) ->
-    @vwidth = @volume.getWidth()
-    @vheight = @volume.getHeight()
-    @vdepth = @volume.getDepth()
+    {width,height,depth} = @volume.getDimensions()
+    @vwidth = width
+    @vheight = height
+    @vdepth = depth
 
     @cube =
       width:1
@@ -33,9 +34,10 @@ class Cubifier
   newCube: (dimension) ->
     @volume = @volume.subtract(@cube)
     @cube = {width:1,height:1,depth:1, offset: @volume.startPosition()}
-    @vwidth = @volume.getWidth()
-    @vheight = @volume.getHeight()
-    @vdepth = @volume.getDepth()
+    {width,height,depth} = @volume.getDimensions()
+    @vwidth = width
+    @vheight = height
+    @vdepth = depth
 
   uncoveredDimension: ->
     return 'x' if @cube.width < @vwidth
