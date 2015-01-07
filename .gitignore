@@ -3,3 +3,7 @@
 build
 Desktop.ini
 node_modules
+*.cmake
+CMakeFiles/
+CMakeCache.txt
+Makefile
