@@ -3,6 +3,7 @@ THREE = require('three')
 TrackballControls = require('./TrackballControls')
 Mesh = require('./cubifier/Mesh')
 Cubifier = require('./cubifier/Cubifier')
+FastCubifier = require('./cubifier/FastCubifier')
 Volume = require('./cubifier/Volume')
 
 scene = new THREE.Scene()
@@ -41,16 +42,16 @@ createIrregularVolume = ->
   volume.append(createVolume(5,5,5))
   volume.append(createVolume(5,10,10, {x:5,y:0,z:0}))
   volume.append(createVolume(5,10,1, {x:1,y:0,z:0}))
-  volume.append(createVolume(10,1,1,{x:-10,y:1,z:1}))
+  #volume.append(createVolume(10,1,1,{x:-10,y:1,z:1}))
   volume.append(createVolume(1,1,100, {x:20,y:1,z:1}))
   volume
 
 createDonutVolume = ->
   volume = new Volume()
-  volume.append(createVolume(20,5,5, {x:0,y:0,z:0}))
-  volume.append(createVolume(5,20,5, {x:15,y:5,z:0}))
-  volume.append(createVolume(20,5,5, {x:0,y:20,z:0}))
-  volume.append(createVolume(5,20,5, {x:0,y:0,z:0}))
+  volume.append(createVolume(20,5,5, {x:0,y:0,z:2}))
+  volume.append(createVolume(5,20,5, {x:15,y:5,z:2}))
+  volume.append(createVolume(20,5,5, {x:0,y:20,z:2}))
+  volume.append(createVolume(5,20,5, {x:0,y:0,z:2}))
   volume.append(createVolume(20,25,1, {x:0,y:0,z:5}))
   volume
 
@@ -64,10 +65,10 @@ createGiantSurface = ->
 
 createSprinkles = ->
   volume = new Volume()
-  volume.append(createVolume(1,1,1, {x:0,y:0,z:-1}))
-  volume.append(createVolume(1,1,1, {x:1,y:1,z:-1}))
-  volume.append(createVolume(1,1,2, {x:19,y:0,z:-2}))
-  volume.append(createVolume(1,1,2, {x:19,y:6,z:-2}))
+  volume.append(createVolume(1,1,1, {x:0,y:0,z:0}))
+  volume.append(createVolume(1,1,1, {x:1,y:1,z:0}))
+  volume.append(createVolume(1,1,2, {x:19,y:0,z:1}))
+  volume.append(createVolume(1,1,2, {x:19,y:6,z:1}))
   volume
 
 createDonutWithSprinkles = ->
@@ -82,6 +83,30 @@ createRandomShape = ->
     for y in [0..40]
       z = Math.round(Math.random() * 5)
       volume.append(createVolume(1,1,1, {x:x, y:y, z:z}))
+  volume
+
+createShaft = ->
+  volume = new Volume()
+  for x in [0..10]
+    for y in [0..10]
+      for z in [0..100]
+        volume.append(createVolume(1,1,1, {x:x,y:y,z:z}))
+  volume
+
+createXPipe = ->
+  volume = new Volume()
+  for x in [0..100]
+    for y in [0..10]
+      for z in [0..10]
+        volume.append(createVolume(1,1,1, {x:x,y:y,z:z}))
+  volume
+
+createYPipe = ->
+  volume = new Volume()
+  for x in [0..10]
+    for y in [0..100]
+      for z in [0..10]
+        volume.append(createVolume(1,1,1, {x:x,y:y,z:z}))
   volume
 
 
@@ -108,11 +133,24 @@ renderCube = (cube) ->
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
-#volume = createVolume(10,10,10, {x:5, y:0, z:0})
+#volume = createShaft()
+#volume = createXPipe()
+#volume = createYPipe()
 #volume = createIrregularVolume()
-volume = createGiantSurface()
+#volume = createVolume(20,20,10, {x:0, y:0, z:0})
+#volume = createDonutVolume()
+volume = createRandomShape()
+#volume = createSprinkles()
+#volume = createDonutWithSprinkles()
+#volume = createGiantSurface()
 renderVolume(volume)
 render()
 animate()
-cubifier = new Cubifier(renderCube)
-cubifier.cubify volume
+
+cubify = () ->
+  cubifier = new FastCubifier(renderCube)
+  cubifier.cubify volume
+
+console.time('cubify')
+cubify()
+console.timeEnd('cubify')
