@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h>
 
 #define CHECK_ERROR(CMD) \
 do { \
@@ -11,15 +12,71 @@ do { \
   } \
 } while(0)
 
-static void get_dimensions(CubifierVolume *volume, int *width, int *height, int *depth){
+typedef struct {
+  int width;
+  int height;
+  int depth;
+  int xmin;
+  int ymin;
+  int zmin;
+  int xmax;
+  int ymax;
+  int zmax;
+} Dimensions;
 
-}
+static CUBIFIER_ERROR get_dimensions(CubifierVolume *volume, Dimensions *dimensions){
+  short value;
+  int xmin = INT_MIN, ymin = INT_MIN, zmin = INT_MIN;
+  int xmax = INT_MAX, ymax = INT_MAX, zmax = INT_MAX;
 
-static void set_start_position(CubifierVolume *volume, CubifierCube *cube){
+  for(int x = 0; x < volume->width; x++){
+    for(int y = 0; y < volume->height; y++){
+      for(int z = 0; z < volume->depth; z++){
+        CHECK_ERROR(cubifier_get_voxel(volume, x, y, z, &value));
+        if(value){
+          if(x < xmin){
+            xmin = x;
+          }
+          if(x > xmax){
+            xmax = x;
+          }
+          if(y < ymin){
+            ymin = y;
+          }
+          if(y > ymax){
+            ymax = y;
+          }
+          if(z < zmin){
+            zmin = z;
+          }
+          if(z > zmax){
+            zmax = z;
+          }
+        }
+      }
+    }
+  }
+
+  dimensions->width = abs(xmax - xmin) + 1;
+  dimensions->height = abs(ymax - ymin) + 1;
+  dimensions->depth = abs(zmax - zmin) + 1;
+  dimensions->xmin = xmin;
+  dimensions->xmax = xmax;
+  dimensions->ymin = ymin;
+  dimensions->ymax = ymax;
+  dimensions->zmin = zmin;
+  dimensions->zmax = zmax;
+
+  return CUBIFIER_ERROR_SUCCESS;
 }
 
 static bool cube_needs_expansion(CubifierVolume *volume, CubifierCube* cube){
-  return false;
+  if(volume->width == 0 || volume->height == 0 || volume->depth == 0){
+    return false;
+  }
+  return (cube->width < volume->width ||
+          cube->height < volume->height ||
+          cube->depth < volume->depth);
 }
 
 static void new_cube(CubifierVolume *volume, CubifierCube *oldCube, CubifierCube *cube){
@@ -74,9 +131,9 @@ CUBIFIER_ERROR cubifier_get_voxel(CubifierVolume *volume, int x, int y, int z, s
 }
 
 CUBIFIER_ERROR cubifier_cubify(CubifierVolume *volume, CubifierCube *outCubes, int *outCubeCount){
-  int width, height, depth;
+  Dimensions dimensions;
 
-  get_dimensions(volume, &width, &height, &depth);
+  CHECK_ERROR(get_dimensions(volume, &dimensions));
 
   int cubeCount = 0;
   CubifierCube *cubes = malloc(sizeof(CubifierCube) * 100);
@@ -86,7 +143,12 @@ CUBIFIER_ERROR cubifier_cubify(CubifierVolume *volume, CubifierCube *outCubes, i
 
   CubifierCube *cube = &cubes[0];
 
-  set_start_position(volume, cube);
+  cube->width = dimensions.width;
+  cube->height = dimensions.height;
+  cube->depth = dimensions.depth;
+  cube->offsetX = dimensions.xmin;
+  cube->offsetY = dimensions.ymin;
+  cube->offsetZ = dimensions.zmin;
 
   while(cube_needs_expansion(volume, cube)) {
     if(!expand_cube(volume, cube)){
