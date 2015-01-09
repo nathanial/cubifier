@@ -17,7 +17,9 @@ class Mesh
         for z in [0...cube.depth]
           box = @findBox({x:x+cube.offset.x,y:y+cube.offset.y,z:z+cube.offset.z})
           if not box
-            throw "Could not find box: #{x}, #{y}, #{z}"
+            console.log("Bad Cube", cube)
+            continue
+            #throw "Could not find box: #{x}, #{y}, #{z}"
           # if box.material.wireframe
           box.material.color.setHex(color)
           box.material.wireframe = false

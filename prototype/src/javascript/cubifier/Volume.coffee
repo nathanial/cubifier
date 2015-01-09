@@ -44,12 +44,18 @@ class Volume
           zmin = z
     {x:xmin,y:ymin,z:zmin}
 
+  empty: ->
+    {width,height,depth} = @getDimensions()
+    return width == 0 || height == 0 || depth == 0
+
 
   getDimensions: ->
+    noBlocks = true
     zmin = ymin = xmin = Number.MAX_VALUE
     zmax = ymax = xmax = Number.MIN_VALUE
     @forEach (x,y,z, value) ->
       if value
+        noBlocks = false
         if x < xmin
           xmin = x
         if x > xmax
@@ -62,6 +68,12 @@ class Volume
           zmin = z
         if z > zmax
           zmax = z
+    if noBlocks
+      return {
+        width: 0
+        height: 0
+        depth: 0
+      }
     return {
       width: Math.abs(xmax - xmin) + 1,
       height: Math.abs(ymax - ymin) + 1,
@@ -80,19 +92,9 @@ class Volume
       fn(parseInt(x),parseInt(y),parseInt(z), value)
 
   subtract: (cube) ->
-    v = new Volume()
-    inCount = 0
-    outCount = 0
     @forEach (x,y,z, value) =>
-      if value
-        if not @insideCube(cube,x,y,z)
-          outCount += 1
-          v.setVoxel(x,y,z,value)
-        else
-          inCount += 1
-    if inCount == 0
-      throw "Subtraction failed"
-    v
+      if @insideCube(cube,x,y,z)
+        @setVoxel(x,y,z,0)
 
   insideCube: (cube, x, y, z) ->
     xWithin = cube.width + cube.offset.x > x >= cube.offset.x

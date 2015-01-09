@@ -32,12 +32,16 @@ class Cubifier
       throw "Missed some volume"
 
   newCube: (dimension) ->
-    @volume = @volume.subtract(@cube)
-    @cube = {width:1,height:1,depth:1, offset: @volume.startPosition()}
+    @volume.subtract(@cube)
     {width,height,depth} = @volume.getDimensions()
     @vwidth = width
     @vheight = height
     @vdepth = depth
+
+    if width == 0 || height == 0 || depth == 0
+      return
+    @cube = {width:1,height:1,depth:1, offset: @volume.startPosition()}
+
 
   uncoveredDimension: ->
     return 'x' if @cube.width < @vwidth
@@ -46,6 +50,9 @@ class Cubifier
     throw "All dimensions are covered"
 
   cubeNeedsExpansion: ->
+    return false if @vwidth < 1
+    return false if @vheight < 1
+    return false if @vdepth < 1
     return false if _.keys(@volume.blocks).length == 0
     (@cube.width < @vwidth or
      @cube.height < @vheight or

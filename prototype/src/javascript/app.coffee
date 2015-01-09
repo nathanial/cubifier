@@ -109,6 +109,7 @@ controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
 #volume = createVolume(10,10,10, {x:5, y:0, z:0})
+#volume = createDonutWithSprinkles()
 volume = createRandomShape()
 #volume = createGiantSurface()
 renderVolume(volume)

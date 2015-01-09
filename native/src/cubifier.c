@@ -87,6 +87,10 @@ static bool expand_cube(CubifierVolume *volume, CubifierCube *cube){
   return false;
 }
 
+static void volume_subtract(CubifierVolume *volume, CubifierCube *cube){
+  
+}
+
 CUBIFIER_ERROR cubifier_create_volume(int xdim, int ydim, int zdim, CubifierVolume *outVolume){
   outVolume->width = xdim;
   outVolume->height = ydim;
