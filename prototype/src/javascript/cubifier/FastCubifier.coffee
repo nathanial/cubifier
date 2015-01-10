@@ -1,3 +1,5 @@
+_ = require 'underscore'
+
 class FastCubifier
   constructor: (@renderCube) ->
     if !@renderCube
@@ -9,6 +11,8 @@ class FastCubifier
     @vheight = height
     @vdepth = depth
 
+    copy = (x) -> JSON.parse(JSON.stringify(x))
+
     @cube =
       width: 1
       height: 1
@@ -16,7 +20,7 @@ class FastCubifier
       offset: @volume.startPosition()
       buffer: []
 
-    @renderCube(@cube)
+    @renderCube(copy(@cube))
     blockCount = width*height*depth
     i = 0
 
@@ -28,14 +32,26 @@ class FastCubifier
       if @volume.getVoxel(x,y,z)
         @appendToCube(i)
       else
-        @renderCube(@cube)
-        throw "oops #{i}: #{x},#{y},#{z}"
-
+        @renderCube(copy(@cube))
+        while i < blockCount
+          {x,y,z} = @toCoordinates(i)
+          if @volume.getVoxel(x,y,z)
+            break
+          i += 1
+        @cube =
+          width: 1
+          heigth: 1
+          depth: 1
+          offset:
+            x:x
+            y:y
+            z:z
+          buffer: _.clone(@cube.buffer)
       if @cube.width < 0 or @cube.height < 0 or @cube.depth < 0
         throw "Invalid Cube #{JSON.stringify(@cube)} #{x} #{y} #{z}"
 
       i += 1
-    @renderCube(@cube)
+    @renderCube(copy(@cube))
 
   insideCube: (i) ->
     {x,y,z} = @toCoordinates(i)
@@ -64,6 +80,10 @@ class FastCubifier
     zmin = Number.MAX_VALUE
     zmax = Number.MIN_VALUE
 
+    originX = Number.MAX_VALUE
+    originY = Number.MAX_VALUE
+    originZ = Number.MAX_VALUE
+
     for {x,y,z} in @cube.buffer
       if x < xmin
         xmin = x
@@ -78,9 +98,18 @@ class FastCubifier
       if z > zmax
         zmax = z
 
+      if x <= originX && y <= originY && z <= originZ
+        originX = x
+        originY = y
+        originZ = z
+
     @cube.width = Math.abs(xmin - xmax) + 1
     @cube.height = Math.abs(ymin - ymax) + 1
     @cube.depth = Math.abs(zmin - zmax) + 1
+    @cube.offset =
+      x: originX
+      y: originY
+      z: originZ
 
 
 
