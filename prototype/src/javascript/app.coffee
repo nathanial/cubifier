@@ -42,7 +42,7 @@ createIrregularVolume = ->
   volume.append(createVolume(5,5,5))
   volume.append(createVolume(5,10,10, {x:5,y:0,z:0}))
   volume.append(createVolume(5,10,1, {x:1,y:0,z:0}))
-  volume.append(createVolume(10,1,1,{x:-10,y:1,z:1}))
+  #volume.append(createVolume(10,1,1,{x:-10,y:1,z:1}))
   volume.append(createVolume(1,1,100, {x:20,y:1,z:1}))
   volume
 
@@ -85,7 +85,6 @@ createRandomShape = ->
       volume.append(createVolume(1,1,1, {x:x, y:y, z:z}))
   volume
 
-
 camera.position.x = 5
 camera.position.y = -10
 camera.position.z = -10
@@ -109,10 +108,11 @@ renderCube = (cube) ->
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
-volume = createIrregularVolume()
-#volume = createVolume(20,20,10, {x:0, y:0, z:0})
+#volume = createIrregularVolume()
+volume = createVolume(20,20,10, {x:0, y:0, z:0})
 #volume = createDonutVolume()
 #volume = createRandomShape()
+#volume = createSprinkles()
 #volume = createDonutWithSprinkles()
 #volume = createGiantSurface()
 renderVolume(volume)
