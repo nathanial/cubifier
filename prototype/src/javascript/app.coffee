@@ -3,6 +3,7 @@ THREE = require('three')
 TrackballControls = require('./TrackballControls')
 Mesh = require('./cubifier/Mesh')
 Cubifier = require('./cubifier/Cubifier')
+FastCubifier = require('./cubifier/FastCubifier')
 Volume = require('./cubifier/Volume')
 
 scene = new THREE.Scene()
@@ -108,12 +109,12 @@ renderCube = (cube) ->
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
-#volume = createVolume(10,10,10, {x:5, y:0, z:0})
+volume = createVolume(50,50,2, {x:0, y:0, z:0})
 #volume = createDonutWithSprinkles()
-volume = createRandomShape()
+#volume = createRandomShape()
 #volume = createGiantSurface()
 renderVolume(volume)
 render()
 animate()
-cubifier = new Cubifier(renderCube)
+cubifier = new FastCubifier(renderCube)
 cubifier.cubify volume
