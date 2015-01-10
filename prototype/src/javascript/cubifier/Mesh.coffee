@@ -11,6 +11,7 @@ class Mesh
     @boxes["#{cursor.x},#{cursor.y},#{cursor.z}"]
 
   colorizeCube: (cube) ->
+    console.log("Colorize", cube)
     color = '0x'+Math.floor(Math.random()*16777215).toString(16)
     for x in [0...cube.width]
       for y in [0...cube.height]
