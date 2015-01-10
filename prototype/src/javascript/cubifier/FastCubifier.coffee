@@ -1,4 +1,3 @@
-
 class FastCubifier
   constructor: (@renderCube) ->
     if !@renderCube
@@ -8,7 +7,7 @@ class FastCubifier
     {width,height,depth} = @volume.getDimensions()
     @vwidth = width
     @vheight = height
-    @depth = depth
+    @vdepth = depth
 
     @cube =
       width: 1
@@ -18,11 +17,17 @@ class FastCubifier
     @renderCube(@cube)
     blockCount = width*height*depth
     i = 0
+
+    xcolumn = 0
     while i < blockCount
-      if not @insideCube(i)
-        if not @expandCube(i)
-          @newCube(i)
+      {x,y,z} = @toCoordinates(i)
+      if not @volume.getVoxel(x,y,z)
+         
+        throw "Break"
+      @expandCube(x,y,z)
+      @renderCube(@cube)
       i += 1
+    @renderCube(@cube)
 
   insideCube: (i) ->
     {x,y,z} = @toCoordinates(i)
@@ -31,16 +36,17 @@ class FastCubifier
     return false unless z >= @cube.offset.z and z < @cube.depth + @cube.offset.z
     return true
 
-  expandCube: (i) -> 
-    false
+  expandCube: (x,y,z) ->
+    @cube.width = x + 1
+    @cube.height = y + 1
+    @cube.depth = z + 1
 
   newCube: (i) ->
     coords = @toCoordinates(i)
-    @renderCube
-      width: 1
-      height: 1
-      depth: 1
-      offset: coords
+    @renderCube @cube
+    throw "Not Implemented"
+
+
 
   toCoordinates: (i) ->
     x = i % @vwidth
