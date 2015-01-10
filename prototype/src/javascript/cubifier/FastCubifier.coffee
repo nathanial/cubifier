@@ -13,33 +13,27 @@ class FastCubifier
 
     copy = (x) -> JSON.parse(JSON.stringify(x))
 
-    #
-    #@renderCube(copy(@cube))
-    blockCount = width*height*depth
+    @cubes = []
 
-    i = 0
+    @cube =
+      width: 1
+      height: 1
+      depth: 1
+      expandable:
+        x: true
+        y: true
+        z: true
+      offset: @volume.startPosition()
+    @cubes.push(@cube)
 
-    strips = []
-    buffer = []
 
-    createStrip = =>
-      strips.push
-        origin: @toCoordinates(buffer[0])
-        length: buffer.length
-      buffer = []
-      @renderStrip(_.last(strips))
-
-    while i < blockCount
-      {x,y,z} = @toCoordinates(i)
-      if x == 0 && buffer.length > 0
-        createStrip()
-      if @volume.getVoxel(x,y,z)
-        buffer.push(i)
-      else if buffer.length > 0
-        createStrip()
-      i += 1
-    if buffer.length > 0
-      createStrip()
+    while not @complete()
+      if not @expandCurrentCube()
+        if @complete()
+          break
+        @createNewCube()
+    for cube in @cubes
+      @renderCube(cube)
 
   toCoordinates: (i) ->
     x = i % @vwidth
@@ -47,14 +41,95 @@ class FastCubifier
     z = Math.floor((i / (@vwidth * @vheight)))
     {x:x, y:y, z:z}
 
-  renderStrip: (strip) ->
-    @renderCube
-      width: strip.length
-      height: 1
-      depth: 1
-      offset: strip.origin
+  complete: ->
+    @updateCubeDimensions()
+    (@totalCubeWidth >= @vwidth and
+     @totalCubeHeight >=  @vheight and
+     @totalCubeDepth >= @vdepth)
 
+  expandCurrentCube: ->
+    expanded = false
+    for dim in ['x','y','z']
+      if @cube.expandable[dim] and @canExpand(dim)
+        @expand(dim)
+        expanded = true
+      else
+        @cube.expandable[dim] = false
+    expanded
 
+  renderCurrentCube: ->
+    @renderCube(@cube)
 
+  createNewCube: ->
+    throw "Not Implemented"
+
+  expand: (dimension) ->
+    if dimension == 'x'
+      @cube.width += 1
+    else if dimension == 'y'
+      @cube.height += 1
+    else if dimension == 'z'
+      @cube.depth += 1
+    else
+      throw "Unrecognized dimension #{dimension}"
+
+  canExpand: (dimension) ->
+    if dimension == 'x'
+      canExpand = @cube.width < @vwidth and @fullFrontier('x')
+    else if dimension == 'y'
+      canExpand = @cube.height < @vheight and @fullFrontier('y')
+    else if dimension == 'z'
+      canExpand = @cube.depth < @vdepth and @fullFrontier('z')
+    else
+      throw "Unrecognized dimension #{dimension}"
+    return canExpand
+
+  updateCubeDimensions: ->
+    width = 0
+    height = 0
+    depth = 0
+
+    for cube in @cubes
+      width += cube.width
+      height += cube.height
+      depth += cube.depth
+
+    @totalCubeWidth = width
+    @totalCubeHeight = height
+    @totalCubeDepth = depth
+
+  fullFrontier: (dimension) ->
+    if dimension == 'x'
+      return @fullXPlane()
+    else if dimension == 'y'
+      return @fullYPlane()
+    else if dimension == 'z'
+      return @fullZPlane()
+    else
+      throw "Not Recognized Dimension: #{dimension}"
+
+  fullXPlane: ->
+    x = @cube.width + @cube.offset.x
+    for y in [0...@cube.height]
+      for z in [0...@cube.depth]
+        if not @volume.getVoxel(x,y,z)
+          return false
+    return true
+
+  fullYPlane:  ->
+    y = @cube.height + @cube.offset.y
+    for x in [0...@cube.width]
+      for z in [0...@cube.depth]
+        if not @volume.getVoxel(x,y,z)
+          return false
+    return true
+
+  fullZPlane:  ->
+    z = @cube.depth + @cube.offset.z
+    for x in [0...@cube.width]
+      for y in [0...@cube.depth]
+        if not @volume.getVoxel(x,y,z)
+          return false
+    return true
 
 module.exports = FastCubifier

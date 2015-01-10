@@ -109,8 +109,8 @@ controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
 #volume = createIrregularVolume()
-volume = createVolume(20,20,10, {x:0, y:0, z:0})
-#volume = createDonutVolume()
+#volume = createVolume(20,20,10, {x:0, y:0, z:0})
+volume = createDonutVolume()
 #volume = createRandomShape()
 #volume = createSprinkles()
 #volume = createDonutWithSprinkles()
@@ -118,5 +118,11 @@ volume = createVolume(20,20,10, {x:0, y:0, z:0})
 renderVolume(volume)
 render()
 animate()
-cubifier = new FastCubifier(renderCube)
-cubifier.cubify volume
+
+cubify = () ->
+  cubifier = new FastCubifier(renderCube)
+  cubifier.cubify volume
+
+console.time('cubify')
+cubify()
+console.timeEnd('cubify')
