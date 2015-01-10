@@ -53,9 +53,7 @@ class FastCubifier
 
   complete: ->
     @updateCubeDimensions()
-    (@totalCubeWidth >= @vwidth and
-     @totalCubeHeight >=  @vheight and
-     @totalCubeDepth >= @vdepth)
+    @totalBlocks == @volume.blocks.length
 
   expandCurrentCube: ->
     expanded = false
@@ -75,14 +73,8 @@ class FastCubifier
   createNewCube: ->
     @updateCubeDimensions()
     @renderCube(@cube)
-    if @totalCubeWidth < @vwidth
-      @createNewCubeOnXPlane()
-    else if @totalCubeHeight < @vheight
-      @createNewCubeOnYPlane()
-    else if @totalCubeDepth < @vdepth
-      @createNewCubeOnZPlane()
-    else
-      throw "Couldn't find a place to create a new cube"
+    @cube = @newCube(@newStartPosition())
+    @cubes.push(@cube)
 
   expand: (dimension) ->
     if dimension == 'x'
@@ -93,48 +85,6 @@ class FastCubifier
       @cube.depth += 1
     else
       throw "Unrecognized dimension #{dimension}"
-
-  createNewCubeOnXPlane: ->
-    newCube =
-      width: 1
-      height: 1
-      depth: 1
-      expandable:
-        x: true
-        y: true
-        z: true
-      offsetX: @cube.width + @cube.offsetX
-      offsetY: 0
-      offsetZ: 0
-    @cube = newCube
-    console.log("X Plane", newCube)
-    @cubes.push(@cube)
-
-  createNewCubeOnYPlane: ->
-    newCube =
-      width: 1
-      height: 1
-      depth: 1
-      expandable: {x: true, y: true, z: true}
-      offsetX: 0
-      offsetY: @cube.height + @cube.offsetY
-      offsetZ: 0
-    @cube = newCube
-    console.log("Y Plane", newCube)
-    @cubes.push(@cube)
-
-  createNewCubeOnZPlane: ->
-    newCube =
-      width: 1
-      height: 1
-      depth: 1
-      expandable: {x: true, y: true, z: true}
-      offsetX: 0
-      offsetY: 0
-      offsetZ: @cube.depth + @cube.offsetZ
-    @cube = newCube
-    console.log("Z Plane", newCube)
-    @cubes.push(@cube)
 
   canExpand: (dimension) ->
     if dimension == 'x'
@@ -148,18 +98,9 @@ class FastCubifier
     return canExpand
 
   updateCubeDimensions: ->
-    width = 0
-    height = 0
-    depth = 0
-
+    @totalBlocks = 0
     for cube in @cubes
-      width += cube.width
-      height += cube.height
-      depth += cube.depth
-
-    @totalCubeWidth = width
-    @totalCubeHeight = height
-    @totalCubeDepth = depth
+      @totalBlocks += (cube.width * cube.height * cube.depth)
 
   fullFrontier: (dimension) ->
     if dimension == 'x'
@@ -194,5 +135,38 @@ class FastCubifier
         if not @volume.getVoxel(x + @cube.offsetX, y + @cube.offsetY, z)
           return false
     return true
+
+  newCube: (startPosition) ->
+    width: 1
+    height: 1
+    depth: 1
+    expandable: {x: true, y: true, z: true}
+    offsetX: startPosition.x
+    offsetY: startPosition.y
+    offsetZ: startPosition.z
+
+  newStartPosition: ->
+    lastCube = _.last(@cubes)
+    x = 0
+    while x < @vwidth
+      y = 0
+      while y < @vheight
+        z = 0
+        while z < @vdepth
+          if @volume.getVoxel(x,y,z) and !_.any(@cubes, (c) => @insideCube(c, x,y,z))
+            return {x:x,y:y,z:z}
+          z += 1
+        y += 1
+      x += 1
+
+    throw "Couldn't find a new start position"
+
+  insideCube: (cube, x,y,z) ->
+    return false unless x >= cube.offsetX and x < cube.width + cube.offsetX
+    return false unless y >= cube.offsetY and y < cube.height + cube.offsetY
+    return false unless z >= cube.offsetZ and z < cube.depth + cube.offsetZ
+    return true
+
+
 
 module.exports = FastCubifier
