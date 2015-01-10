@@ -109,8 +109,8 @@ renderCube = (cube) ->
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
-#volume = createVolume(20,20,10, {x:0, y:0, z:0})
-volume = createDonutVolume()
+volume = createVolume(20,20,10, {x:0, y:0, z:0})
+#volume = createDonutVolume()
 #volume = createRandomShape()
 #volume = createGiantSurface()
 renderVolume(volume)
