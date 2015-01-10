@@ -1,5 +1,7 @@
 _ = require 'underscore'
 
+ITERATION_LIMIT = 1000
+
 class FastCubifier
   constructor: (@renderCube) ->
     if !@renderCube
@@ -15,6 +17,7 @@ class FastCubifier
 
     @cubes = []
 
+    {x,y,z} = @volume.startPosition()
     @cube =
       width: 1
       height: 1
@@ -23,15 +26,21 @@ class FastCubifier
         x: true
         y: true
         z: true
-      offset: @volume.startPosition()
+      offsetX: x
+      offsetY: y
+      offsetZ: z
     @cubes.push(@cube)
+    @updateCubeDimensions()
 
-
+    i = 0
     while not @complete()
       if not @expandCurrentCube()
         if @complete()
           break
         @createNewCube()
+      i += 1
+      if i >= ITERATION_LIMIT
+        throw "ITERATION LIMIT EXCEEDED"
     for cube in @cubes
       @renderCube(cube)
 
@@ -61,7 +70,16 @@ class FastCubifier
     @renderCube(@cube)
 
   createNewCube: ->
-    throw "Not Implemented"
+    @updateCubeDimensions()
+    @renderCube(@cube)
+    if @totalCubeWidth < @vwidth
+      @createNewCubeOnXPlane()
+    else if @totalCubeHeight < @vheight
+      @createNewCubeOnYPlane()
+    else if @totalCubeDepth < @vdepth
+      @createNewCubeOnZPlane()
+    else
+      throw "Couldn't find a place to create a new cube"
 
   expand: (dimension) ->
     if dimension == 'x'
@@ -72,6 +90,48 @@ class FastCubifier
       @cube.depth += 1
     else
       throw "Unrecognized dimension #{dimension}"
+
+  createNewCubeOnXPlane: ->
+    newCube =
+      width: 1
+      height: 1
+      depth: 1
+      expandable:
+        x: true
+        y: true
+        z: true
+      offsetX: @cube.width + @cube.offsetX
+      offsetY: 0
+      offsetZ: 0
+    @cube = newCube
+    console.log("X Plane", newCube)
+    @cubes.push(@cube)
+
+  createNewCubeOnYPlane: ->
+    newCube =
+      width: 1
+      height: 1
+      depth: 1
+      expandable: {x: true, y: true, z: true}
+      offsetX: 0
+      offsetY: @cube.height + @cube.offsetY
+      offsetZ: 0
+    @cube = newCube
+    console.log("Y Plane", newCube)
+    @cubes.push(@cube)
+
+  createNewCubeOnZPlane: ->
+    newCube =
+      width: 1
+      height: 1
+      depth: 1
+      expandable: {x: true, y: true, z: true}
+      offsetX: 0
+      offsetY: 0
+      offsetZ: @cube.depth + @cube.offsetZ
+    @cube = newCube
+    console.log("Z Plane", newCube)
+    @cubes.push(@cube)
 
   canExpand: (dimension) ->
     if dimension == 'x'
@@ -109,7 +169,7 @@ class FastCubifier
       throw "Not Recognized Dimension: #{dimension}"
 
   fullXPlane: ->
-    x = @cube.width + @cube.offset.x
+    x = @cube.width + @cube.offsetX
     for y in [0...@cube.height]
       for z in [0...@cube.depth]
         if not @volume.getVoxel(x,y,z)
@@ -117,7 +177,7 @@ class FastCubifier
     return true
 
   fullYPlane:  ->
-    y = @cube.height + @cube.offset.y
+    y = @cube.height + @cube.offsetY
     for x in [0...@cube.width]
       for z in [0...@cube.depth]
         if not @volume.getVoxel(x,y,z)
@@ -125,7 +185,7 @@ class FastCubifier
     return true
 
   fullZPlane:  ->
-    z = @cube.depth + @cube.offset.z
+    z = @cube.depth + @cube.offsetZ
     for x in [0...@cube.width]
       for y in [0...@cube.depth]
         if not @volume.getVoxel(x,y,z)
