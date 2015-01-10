@@ -9,12 +9,18 @@ class FastCubifier
 
   cubify: (@volume) ->
     {width,height,depth} = @volume.getDimensions()
+    @startIterator = 0
+    @volumeBlocks = _.keys(@volume.blocks).length
     @firstX = @volume.firstX()
     @firstY = @volume.firstY()
     @firstZ = @volume.firstZ()
     @vwidth = width
     @vheight = height
     @vdepth = depth
+
+    console.log("FIRST_X", @firstX)
+    console.log("FIRST_Y", @firstY)
+    console.log("FIRST_Z", @firstZ)
 
     copy = (x) -> JSON.parse(JSON.stringify(x))
 
@@ -37,14 +43,17 @@ class FastCubifier
     @totalVoxels = @computeTotalVoxels()
 
     i = 0
-    while not @complete()
-      if not @expandCurrentCube()
-        if @complete()
-          break
-        @createNewCube()
-      i += 1
-      if i >= ITERATION_LIMIT
-        throw "ITERATION LIMIT EXCEEDED"
+    try
+      while not @complete()
+        if not @expandCurrentCube()
+          if @complete()
+            break
+          @createNewCube()
+        i += 1
+        if i >= ITERATION_LIMIT
+          throw "ITERATION LIMIT EXCEEDED"
+    catch exception
+      console.log("OOOPS", exception)
     for cube in @cubes
       @renderCube(cube)
     console.log("ITERATIONS", i)
@@ -54,7 +63,7 @@ class FastCubifier
     x = i % @vwidth
     y = Math.floor(i / @vwidth) % @vheight
     z = Math.floor((i / (@vwidth * @vheight)))
-    {x:x, y:y, z:z}
+    {x:x + @firstX, y:y + @firstY, z:z + @firstZ}
 
   complete: ->
     @updateCubeDimensions()
@@ -149,21 +158,15 @@ class FastCubifier
     offsetY: startPosition.y
     offsetZ: startPosition.z
 
+
   newStartPosition: ->
-    lastCube = _.last(@cubes)
-    x = @firstX
-    while x < @vwidth + @firstX
-      y = @firstY
-      while y < @vheight + @firstY
-        z = @firstZ
-        while z < @vdepth + @firstZ
-          if @volume.getVoxel(x,y,z) and !_.any(@cubes, (c) => @insideCube(c, x,y,z))
-            # console.log("NEW START POSITION", x,y,z)
-            return {x:x,y:y,z:z}
-          z += 1
-        y += 1
-      x += 1
-    throw "Couldn't find a new start position"
+    while @startIterator < (@vwidth * @vheight * @vdepth)
+      {x,y,z} = @toCoordinates(@startIterator)
+      if @volume.getVoxel(x,y,z) and !_.any(@cubes, (c) => @insideCube(c, x, y, z))
+        return {x:x,y:y, z:z}
+      @startIterator += 1
+    throw "Could not find a new start position"
+
 
   insideCube: (cube, x,y,z) ->
     return false unless x >= cube.offsetX and x < cube.width + cube.offsetX
