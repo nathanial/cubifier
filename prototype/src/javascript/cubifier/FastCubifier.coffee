@@ -43,6 +43,7 @@ class FastCubifier
         throw "ITERATION LIMIT EXCEEDED"
     for cube in @cubes
       @renderCube(cube)
+    console.log("Cubes", @cubes)
 
   toCoordinates: (i) ->
     x = i % @vwidth
@@ -64,6 +65,8 @@ class FastCubifier
         expanded = true
       else
         @cube.expandable[dim] = false
+    if not expanded
+      console.log("Failed To Expand", @cube)
     expanded
 
   renderCurrentCube: ->
@@ -172,7 +175,7 @@ class FastCubifier
     x = @cube.width + @cube.offsetX
     for y in [0...@cube.height]
       for z in [0...@cube.depth]
-        if not @volume.getVoxel(x,y,z)
+        if not @volume.getVoxel(x, y + @cube.offsetY, z + @cube.offsetZ)
           return false
     return true
 
@@ -180,7 +183,7 @@ class FastCubifier
     y = @cube.height + @cube.offsetY
     for x in [0...@cube.width]
       for z in [0...@cube.depth]
-        if not @volume.getVoxel(x,y,z)
+        if not @volume.getVoxel(x + @cube.offsetX, y, z + @cube.offsetZ)
           return false
     return true
 
@@ -188,7 +191,7 @@ class FastCubifier
     z = @cube.depth + @cube.offsetZ
     for x in [0...@cube.width]
       for y in [0...@cube.depth]
-        if not @volume.getVoxel(x,y,z)
+        if not @volume.getVoxel(x + @cube.offsetX, y + @cube.offsetY, z)
           return false
     return true
 
