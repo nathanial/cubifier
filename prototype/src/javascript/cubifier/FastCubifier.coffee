@@ -21,22 +21,25 @@ class FastCubifier
 
     strips = []
     buffer = []
-    while i < blockCount
-      {x,y,z} = @toCoordinates(i)
-      if x == 0 && buffer.length > 0
-        strips.push
-          origin: @toCoordinates(buffer[0])
-          length: buffer.length
-        buffer = []
-        @renderStrip(_.last(strips))
-      buffer.push(i)
-      i += 1
-    if buffer.length > 0
+
+    createStrip = =>
       strips.push
         origin: @toCoordinates(buffer[0])
         length: buffer.length
+      buffer = []
       @renderStrip(_.last(strips))
 
+    while i < blockCount
+      {x,y,z} = @toCoordinates(i)
+      if x == 0 && buffer.length > 0
+        createStrip()
+      if @volume.getVoxel(x,y,z)
+        buffer.push(i)
+      else if buffer.length > 0
+        createStrip()
+      i += 1
+    if buffer.length > 0
+      createStrip()
 
   toCoordinates: (i) ->
     x = i % @vwidth
