@@ -1,6 +1,6 @@
 _ = require 'underscore'
 
-ITERATION_LIMIT = 1000
+ITERATION_LIMIT = 10000
 
 class FastCubifier
   constructor: (@renderCube) ->
@@ -9,6 +9,9 @@ class FastCubifier
 
   cubify: (@volume) ->
     {width,height,depth} = @volume.getDimensions()
+    @firstX = @volume.firstX()
+    @firstY = @volume.firstY()
+    @firstZ = @volume.firstZ()
     @vwidth = width
     @vheight = height
     @vdepth = depth
@@ -44,7 +47,8 @@ class FastCubifier
         throw "ITERATION LIMIT EXCEEDED"
     for cube in @cubes
       @renderCube(cube)
-    console.log("Cubes", @cubes)
+    console.log("ITERATIONS", i)
+    console.log("Cubes", @cubes.length)
 
   toCoordinates: (i) ->
     x = i % @vwidth
@@ -67,10 +71,9 @@ class FastCubifier
         expanded = true
       else
         @cube.expandable[dim] = false
-    if not expanded
-      console.log("Failed To Expand", @cube)
+    # if not expanded
+    #   console.log("Failed To Expand", @cube)
     expanded
-
 
   createNewCube: ->
     @updateCubeDimensions()
@@ -132,7 +135,7 @@ class FastCubifier
   fullZPlane:  ->
     z = @cube.depth + @cube.offsetZ
     for x in [0...@cube.width]
-      for y in [0...@cube.depth]
+      for y in [0...@cube.height]
         if not @volume.getVoxel(x + @cube.offsetX, y + @cube.offsetY, z)
           return false
     return true
@@ -148,14 +151,14 @@ class FastCubifier
 
   newStartPosition: ->
     lastCube = _.last(@cubes)
-    x = 0
-    while x < @vwidth
-      y = 0
-      while y < @vheight
-        z = 0
-        while z < @vdepth
+    x = @firstX
+    while x < @vwidth + @firstX
+      y = @firstY
+      while y < @vheight + @firstY
+        z = @firstZ
+        while z < @vdepth + @firstZ
           if @volume.getVoxel(x,y,z) and !_.any(@cubes, (c) => @insideCube(c, x,y,z))
-            console.log("NEW START POSITION", x,y,z)
+            # console.log("NEW START POSITION", x,y,z)
             return {x:x,y:y,z:z}
           z += 1
         y += 1

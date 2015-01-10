@@ -48,10 +48,10 @@ createIrregularVolume = ->
 
 createDonutVolume = ->
   volume = new Volume()
-  volume.append(createVolume(20,5,5, {x:0,y:0,z:0}))
-  volume.append(createVolume(5,20,5, {x:15,y:5,z:0}))
-  volume.append(createVolume(20,5,5, {x:0,y:20,z:0}))
-  volume.append(createVolume(5,20,5, {x:0,y:0,z:0}))
+  volume.append(createVolume(20,5,5, {x:0,y:0,z:2}))
+  volume.append(createVolume(5,20,5, {x:15,y:5,z:2}))
+  volume.append(createVolume(20,5,5, {x:0,y:20,z:2}))
+  volume.append(createVolume(5,20,5, {x:0,y:0,z:2}))
   volume.append(createVolume(20,25,1, {x:0,y:0,z:5}))
   volume
 
@@ -65,10 +65,10 @@ createGiantSurface = ->
 
 createSprinkles = ->
   volume = new Volume()
-  volume.append(createVolume(1,1,1, {x:0,y:0,z:-1}))
-  volume.append(createVolume(1,1,1, {x:1,y:1,z:-1}))
-  volume.append(createVolume(1,1,2, {x:19,y:0,z:-2}))
-  volume.append(createVolume(1,1,2, {x:19,y:6,z:-2}))
+  volume.append(createVolume(1,1,1, {x:0,y:0,z:0}))
+  volume.append(createVolume(1,1,1, {x:1,y:1,z:0}))
+  volume.append(createVolume(1,1,2, {x:19,y:0,z:1}))
+  volume.append(createVolume(1,1,2, {x:19,y:6,z:1}))
   volume
 
 createDonutWithSprinkles = ->
@@ -84,6 +84,31 @@ createRandomShape = ->
       z = Math.round(Math.random() * 5)
       volume.append(createVolume(1,1,1, {x:x, y:y, z:z}))
   volume
+
+createShaft = ->
+  volume = new Volume()
+  for x in [0..10]
+    for y in [0..10]
+      for z in [0..100]
+        volume.append(createVolume(1,1,1, {x:x,y:y,z:z}))
+  volume
+
+createXPipe = ->
+  volume = new Volume()
+  for x in [0..100]
+    for y in [0..10]
+      for z in [0..10]
+        volume.append(createVolume(1,1,1, {x:x,y:y,z:z}))
+  volume
+
+createYPipe = ->
+  volume = new Volume()
+  for x in [0..10]
+    for y in [0..100]
+      for z in [0..10]
+        volume.append(createVolume(1,1,1, {x:x,y:y,z:z}))
+  volume
+
 
 camera.position.x = 5
 camera.position.y = -10
@@ -102,18 +127,21 @@ renderCube = (cube) ->
   doRender = ->
     mesh.colorizeCube(cubeCopy)
     render()
-  setTimeout(doRender, 1000 * (space++))
+  setTimeout(doRender, 10 * (space++))
 
 
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
-volume = createIrregularVolume()
+#volume = createShaft()
+#volume = createXPipe()
+#volume = createYPipe()
+#volume = createIrregularVolume()
 #volume = createVolume(20,20,10, {x:0, y:0, z:0})
 #volume = createDonutVolume()
 #volume = createRandomShape()
 #volume = createSprinkles()
-#volume = createDonutWithSprinkles()
+volume = createDonutWithSprinkles()
 #volume = createGiantSurface()
 renderVolume(volume)
 render()
