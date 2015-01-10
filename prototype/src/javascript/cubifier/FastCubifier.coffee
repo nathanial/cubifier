@@ -31,6 +31,7 @@ class FastCubifier
       offsetZ: z
     @cubes.push(@cube)
     @updateCubeDimensions()
+    @totalVoxels = @computeTotalVoxels()
 
     i = 0
     while not @complete()
@@ -53,7 +54,10 @@ class FastCubifier
 
   complete: ->
     @updateCubeDimensions()
-    @totalBlocks == @volume.blocks.length
+    if @totalBlocks == @totalVoxels
+      console.log("Total Blocks", @totalBlocks, @totalVoxels)
+      return true
+    return false
 
   expandCurrentCube: ->
     expanded = false
@@ -67,12 +71,9 @@ class FastCubifier
       console.log("Failed To Expand", @cube)
     expanded
 
-  renderCurrentCube: ->
-    @renderCube(@cube)
 
   createNewCube: ->
     @updateCubeDimensions()
-    @renderCube(@cube)
     @cube = @newCube(@newStartPosition())
     @cubes.push(@cube)
 
@@ -88,11 +89,11 @@ class FastCubifier
 
   canExpand: (dimension) ->
     if dimension == 'x'
-      canExpand = @cube.width < @vwidth and @fullFrontier('x')
+      canExpand = @cube.width < @vwidth and @fullFrontier('x') and not @taken('x')
     else if dimension == 'y'
-      canExpand = @cube.height < @vheight and @fullFrontier('y')
+      canExpand = @cube.height < @vheight and @fullFrontier('y') and not @taken('y')
     else if dimension == 'z'
-      canExpand = @cube.depth < @vdepth and @fullFrontier('z')
+      canExpand = @cube.depth < @vdepth and @fullFrontier('z') and not @taken('z')
     else
       throw "Unrecognized dimension #{dimension}"
     return canExpand
@@ -154,11 +155,11 @@ class FastCubifier
         z = 0
         while z < @vdepth
           if @volume.getVoxel(x,y,z) and !_.any(@cubes, (c) => @insideCube(c, x,y,z))
+            console.log("NEW START POSITION", x,y,z)
             return {x:x,y:y,z:z}
           z += 1
         y += 1
       x += 1
-
     throw "Couldn't find a new start position"
 
   insideCube: (cube, x,y,z) ->
@@ -166,6 +167,40 @@ class FastCubifier
     return false unless y >= cube.offsetY and y < cube.height + cube.offsetY
     return false unless z >= cube.offsetZ and z < cube.depth + cube.offsetZ
     return true
+
+  computeTotalVoxels: ->
+    total = 0
+    for blockKey in _.keys(@volume.blocks)
+      block = @volume.blocks[blockKey]
+      if block
+        total += 1
+    return total
+
+  taken: (dimension) ->
+    if dimension == 'x'
+      x = @cube.width + @cube.offsetX
+      for y in [0...@cube.height]
+        for z in [0...@cube.depth]
+          if _.any(@cubes, (c) => @insideCube(c, x, y + @cube.offsetY, z + @cube.offsetZ))
+            return true
+      return false
+    else if dimension == 'y'
+      y = @cube.height + @cube.offsetY
+      for x in [0...@cube.width]
+        for z in [0...@cube.depth]
+          if _.any(@cubes, (c) => @insideCube(c, x + @cube.offsetX, y, z + @cube.offsetZ))
+            return true
+      return false
+    else if dimension == 'z'
+      z = @cube.depth + @cube.offsetZ
+      for x in [0...@cube.width]
+        for y in [0...@cube.depth]
+          if _.any(@cubes, (c) => @insideCube(c, x + @cube.offsetX, y + @cube.offsetY, z))
+            return true
+      return false
+    else
+      throw "Not Implemented"
+
 
 
 

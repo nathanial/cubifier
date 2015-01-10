@@ -102,15 +102,15 @@ renderCube = (cube) ->
   doRender = ->
     mesh.colorizeCube(cubeCopy)
     render()
-  setTimeout(doRender, 10 * (space++))
+  setTimeout(doRender, 1000 * (space++))
 
 
 controls = new TrackballControls(camera)
 controls.addEventListener('change', render)
 
-#volume = createIrregularVolume()
+volume = createIrregularVolume()
 #volume = createVolume(20,20,10, {x:0, y:0, z:0})
-volume = createDonutVolume()
+#volume = createDonutVolume()
 #volume = createRandomShape()
 #volume = createSprinkles()
 #volume = createDonutWithSprinkles()
